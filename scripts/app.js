@@ -9,7 +9,7 @@ require('../styles/app.css');
   var ctx = canvas.getContext("2d");
   document.body.appendChild(canvas);
   canvas.width = window.innerWidth;
-  canvas.height = 400;
+  canvas.height = 500;
 
   var mouse = null;
 
@@ -22,33 +22,60 @@ require('../styles/app.css');
 
   function draw() {
     // define main colors
-    ctx.fillStyle = "#98ddc2";
+    var gradient = ctx.createLinearGradient(0,0,200,0);
+    gradient.addColorStop(0,"#98ddc2");
+    gradient.addColorStop(1,"#55bb91");
+
+
     ctx.strokeStyle = "#55bb91";
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 3;
 
     // background color
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#98ddc2";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height - h + 5);
+    ctx.fillStyle = gradient;
 
     // draw
     var odd = 0;
-    for (var y = window.innerHeight; y > -h; y -= h) {
+    for (var y = canvas.height - 2 * h; y > -2 * h; y -= h) {
       for (var x = window.innerWidth; x > -w; x -= w) {
+
         var offset = 0;
         if (odd % 2 == 0) {
           offset = -w / 2;
         }
+        var pressure1 = {x: x + offset + 120, y: y + 50};
+        var pressure2 = {x: x + offset + 40, y: y + 130};
+        if (isMouseInEcaille(x + offset, y)) {
+          pressure1.x += 7;
+          pressure1.y -= 7;
+          pressure2.x += 15;
+        }
+
         ctx.beginPath();
         ctx.moveTo(x + offset, y);
-        ctx.bezierCurveTo(x + offset + 120, y + 50, x + offset + 40, y + 130, x + offset - 40, y + 60);
+        ctx.bezierCurveTo(pressure1.x, pressure1.y, pressure2.x, pressure2.y, x + offset - 40, y + 60);
+        ctx.save();
+        ctx.translate(x + offset, y);
         ctx.stroke();
         ctx.fill();
+        ctx.restore();
       }
       odd++;
     }
-    if (mouse) {
-      console.log(mouse);
-    }
     requestAnimationFrame(draw);
+  }
+
+  function isMouseInEcaille(x, y) {
+    if (!mouse) {
+      return false;
+    }
+    if (mouse.x > x - w/2 && mouse.x < x + w
+    && mouse.y > y - h/2 && mouse.y < y + h) {
+      return true;
+    }
+    return false;
   }
 
   function resize() {
